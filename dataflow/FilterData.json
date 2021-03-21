@@ -1,0 +1,32 @@
+{
+	"name": "FilterData",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "InputDataTXT",
+						"type": "DatasetReference"
+					},
+					"name": "EmployeeData"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "destinationemployeeDataSet",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "Filter1"
+				}
+			],
+			"script": "source(output(\n\t\tSegment as string,\n\t\tCountry as string,\n\t\t{ Product } as string,\n\t\t{ Discount Band } as string,\n\t\t{Units Sold} as integer,\n\t\t{ Manufacturing Price } as string,\n\t\t{ Sale Price } as float,\n\t\t{ Gross Sales } as float,\n\t\t{ Discounts } as string,\n\t\t{  Sales } as float,\n\t\t{ COGS } as float,\n\t\t{ Profit } as string,\n\t\tDate as string,\n\t\t{Month Number} as string,\n\t\t{ Month Name } as string,\n\t\tYear as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmployeeData\nEmployeeData filter(equals(Country, 'Canada')) ~> Filter1\nFilter1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['EmployeeDataOutput'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1"
+		}
+	}
+}

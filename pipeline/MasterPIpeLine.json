@@ -1,0 +1,52 @@
+{
+	"name": "MasterPIpeLine",
+	"properties": {
+		"activities": [
+			{
+				"name": "Execute Pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pipeline1_copy1",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"sourceTable": {
+							"value": "@pipeline().parameters.SourceTable",
+							"type": "Expression"
+						},
+						"dBnameFromPipeLine": {
+							"value": "@pipeline().parameters.dBName",
+							"type": "Expression"
+						},
+						"schemaNameFromPipeLine": "dbo",
+						"destinationTable": {
+							"value": "@pipeline().parameters.DestinationTable",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"SourceTable": {
+				"type": "string"
+			},
+			"DestinationTable": {
+				"type": "string"
+			},
+			"dBName": {
+				"type": "string"
+			},
+			"Server": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-03-03T10:24:24Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

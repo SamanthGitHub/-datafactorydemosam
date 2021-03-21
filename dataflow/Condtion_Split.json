@@ -1,0 +1,42 @@
+{
+	"name": "Condtion_Split",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "InputDataTXT",
+						"type": "DatasetReference"
+					},
+					"name": "EmployeeData"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "CondtionaSplitData",
+						"type": "DatasetReference"
+					},
+					"name": "Germany"
+				},
+				{
+					"dataset": {
+						"referenceName": "CondtionaSplitData",
+						"type": "DatasetReference"
+					},
+					"name": "Canada"
+				}
+			],
+			"transformations": [
+				{
+					"name": "CountryWiseFileSplit"
+				},
+				{
+					"name": "Upper"
+				}
+			],
+			"script": "source(output(\n\t\tSegment as string,\n\t\tCountry as string,\n\t\t{ Product } as string,\n\t\t{ Discount Band } as string,\n\t\t{Units Sold} as integer,\n\t\t{ Manufacturing Price } as string,\n\t\t{ Sale Price } as float,\n\t\t{ Gross Sales } as float,\n\t\t{ Discounts } as string,\n\t\t{  Sales } as float,\n\t\t{ COGS } as float,\n\t\t{ Profit } as string,\n\t\tDate as string,\n\t\t{Month Number} as string,\n\t\t{ Month Name } as string,\n\t\tYear as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmployeeData\nEmployeeData split(equals(Country, 'Canada'),\n\tequals(Country, 'Germany'),\n\tdisjoint: false) ~> CountryWiseFileSplit@(Canada, Germany)\nCountryWiseFileSplit@Germany derive(Country = upper(Country),\n\t\tMyCountry = iif(equals(Country,'Canada'), 'CA', 'Unknown')) ~> Upper\nUpper sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['Germany.csv'],\n\tmapColumn(\n\t\tSegment,\n\t\tCountry,\n\t\t{ Product },\n\t\t{ Discount Band },\n\t\t{Units Sold},\n\t\t{ Manufacturing Price },\n\t\t{ Sale Price },\n\t\t{ Gross Sales },\n\t\t{ Discounts },\n\t\t{  Sales },\n\t\t{ COGS },\n\t\t{ Profit },\n\t\tDate,\n\t\t{Month Number},\n\t\t{ Month Name },\n\t\tYear,\n\t\tMyCountry\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Germany\nCountryWiseFileSplit@Canada sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['Canada.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Canada"
+		}
+	}
+}

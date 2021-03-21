@@ -1,0 +1,49 @@
+{
+	"name": "SurrogateKey",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Surro",
+						"type": "DatasetReference"
+					},
+					"name": "Germany"
+				},
+				{
+					"dataset": {
+						"referenceName": "sourceemployeeDataSet",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "destinationemployeeDataSet",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "destinationemployeeDataSet",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				}
+			],
+			"transformations": [
+				{
+					"name": "SurrogateKey1"
+				},
+				{
+					"name": "Window1"
+				}
+			],
+			"script": "source(output(\n\t\tSegment as string,\n\t\tCountry as string,\n\t\t{ Product } as string,\n\t\t{ Discount Band } as string,\n\t\t{Units Sold} as string,\n\t\t{ Manufacturing Price } as string,\n\t\t{ Sale Price } as string,\n\t\t{ Gross Sales } as string,\n\t\t{ Discounts } as string,\n\t\t{  Sales } as string,\n\t\t{ COGS } as string,\n\t\t{ Profit } as string,\n\t\tDate as string,\n\t\t{Month Number} as string,\n\t\t{ Month Name } as string,\n\t\tYear as string,\n\t\tMyCountry as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> Germany\nsource(output(\n\t\tSegment as string,\n\t\tCountry as string,\n\t\t{ Product } as string,\n\t\t{ Discount Band } as string,\n\t\t{Units Sold} as double,\n\t\t{ Manufacturing Price } as string,\n\t\t{ Sale Price } as string,\n\t\t{ Gross Sales } as long,\n\t\t{ Discounts } as string,\n\t\t{  Sales } as string,\n\t\t{ COGS } as string,\n\t\t{ Profit } as string,\n\t\tDate as date,\n\t\t{Month Number} as short,\n\t\t{ Month Name } as date,\n\t\tYear as short\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source1\nGermany keyGenerate(output(CountryID as long),\n\tstartAt: 1L) ~> SurrogateKey1\nsource1 window(over(Segment),\n\tdesc({Units Sold}, true),\n\t{Units Sold_Win} = max({Units Sold})) ~> Window1\nSurrogateKey1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['SurroData'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1\nWindow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['WindowData'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink2"
+		}
+	}
+}

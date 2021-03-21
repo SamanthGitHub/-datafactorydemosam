@@ -1,0 +1,45 @@
+{
+	"name": "FilterData_JoinBack",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "InputDataTXT",
+						"type": "DatasetReference"
+					},
+					"name": "EmployeeData"
+				},
+				{
+					"dataset": {
+						"referenceName": "InputDataTXT",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "destinationemployeeDataSet",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "Filter1"
+				},
+				{
+					"name": "Join1"
+				},
+				{
+					"name": "Aggregate1"
+				}
+			],
+			"script": "source(output(\n\t\tSegment as string,\n\t\tCountry as string,\n\t\t{ Product } as string,\n\t\t{ Discount Band } as string,\n\t\t{Units Sold} as integer,\n\t\t{ Manufacturing Price } as string,\n\t\t{ Sale Price } as float,\n\t\t{ Gross Sales } as float,\n\t\t{ Discounts } as string,\n\t\t{  Sales } as float,\n\t\t{ COGS } as float,\n\t\t{ Profit } as string,\n\t\tDate as string,\n\t\t{Month Number} as string,\n\t\t{ Month Name } as string,\n\t\tYear as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> EmployeeData\nsource(output(\n\t\tSegment as string,\n\t\tCountry as string,\n\t\t{ Product } as string,\n\t\t{ Discount Band } as string,\n\t\t{Units Sold} as string,\n\t\t{ Manufacturing Price } as string,\n\t\t{ Sale Price } as string,\n\t\t{ Gross Sales } as string,\n\t\t{ Discounts } as string,\n\t\t{  Sales } as string,\n\t\t{ COGS } as string,\n\t\t{ Profit } as string,\n\t\tDate as string,\n\t\t{Month Number} as string,\n\t\t{ Month Name } as string,\n\t\tYear as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source1\nEmployeeData filter(equals(Country, 'Canada')) ~> Filter1\nFilter1, source1 join(EmployeeData@Country == source1@Country,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> Join1\nJoin1 aggregate(groupBy(EmployeeData@Country),\n\t{Units Sold} = count(source1@{Units Sold})) ~> Aggregate1\nAggregate1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tmapColumn(\n\t\tCountry,\n\t\t{Units Sold}\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1"
+		}
+	}
+}

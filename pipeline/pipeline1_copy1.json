@@ -1,0 +1,80 @@
+{
+	"name": "pipeline1_copy1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "SqlServerSink"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "SQLTables",
+						"type": "DatasetReference",
+						"parameters": {
+							"tableName": {
+								"value": "@pipeline().parameters.sourceTable",
+								"type": "Expression"
+							},
+							"schema": {
+								"value": "@pipeline().parameters.schemaNameFromPipeLine",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "SQLTables",
+						"type": "DatasetReference",
+						"parameters": {
+							"tableName": {
+								"value": "@pipeline().parameters.destinationTable",
+								"type": "Expression"
+							},
+							"schema": {
+								"value": "@pipeline().parameters.schemaNameFromPipeLine",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"sourceTable": {
+				"type": "string"
+			},
+			"dBnameFromPipeLine": {
+				"type": "string"
+			},
+			"schemaNameFromPipeLine": {
+				"type": "string"
+			},
+			"destinationTable": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-03-02T11:13:32Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

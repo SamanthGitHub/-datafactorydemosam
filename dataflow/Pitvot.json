@@ -1,0 +1,52 @@
+{
+	"name": "Pitvot",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sourceemployeeDataSet",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "destinationemployeeDataSet",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "destinationemployeeDataSet",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				}
+			],
+			"transformations": [
+				{
+					"name": "Sort1"
+				},
+				{
+					"name": "Select1"
+				},
+				{
+					"name": "Pivot1"
+				},
+				{
+					"name": "MapDrifted1",
+					"description": "Creates an explicit mapping for each drifted column"
+				},
+				{
+					"name": "Unpivot1"
+				}
+			],
+			"script": "source(output(\n\t\tSegment as string,\n\t\tCountry as string,\n\t\t{ Product } as string,\n\t\t{ Discount Band } as string,\n\t\t{Units Sold} as short,\n\t\t{ Manufacturing Price } as string,\n\t\t{ Sale Price } as string,\n\t\t{ Gross Sales } as string,\n\t\t{ Discounts } as string,\n\t\t{  Sales } as string,\n\t\t{ COGS } as string,\n\t\t{ Profit } as string,\n\t\tDate as date,\n\t\t{Month Number} as short,\n\t\t{ Month Name } as string,\n\t\tYear as short,\n\t\tMyCountry as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source1\nsource1 sort(desc(Year, true)) ~> Sort1\nSort1 select(mapColumn(\n\t\tSegment,\n\t\t{Units Sold},\n\t\tYear\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nSelect1 pivot(groupBy(Segment),\n\tpivotBy(Year),\n\tUnitsSold = sum({Units Sold}),\n\tcolumnNaming: '$N$V',\n\tlateral: false) ~> Pivot1\nPivot1 derive({2013} = toLong(byName('UnitsSold2013')),\n\t\t{2014} = toLong(byName('UnitsSold2014'))) ~> MapDrifted1\nMapDrifted1 unpivot(output(\n\t\tYear as string,\n\t\tUnitsSold as long\n\t),\n\tungroupBy(Segment),\n\tlateral: true,\n\tignoreNullPivots: true) ~> Unpivot1\nMapDrifted1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['PIvot.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1\nUnpivot1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['Unpivot.csv'],\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink2"
+		}
+	}
+}
