@@ -11,7 +11,7 @@
 					"type": "LinkedServiceReference"
 				},
 				"secretName": "StorageKey",
-				"secretVersion": "Samanth_IR"
+				"secretVersion": ""
 			}
 		}
 	},
